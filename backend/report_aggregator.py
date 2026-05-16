@@ -160,10 +160,22 @@ def process_intersection_phase(db, intersection_id, phase):
 def main():
     print(f"[{datetime.now(timezone.utc).isoformat()}] Starting report aggregation...")
 
-    if not firebase_admin._apps:
-        cred = credentials.ApplicationDefault()
-        firebase_admin.initialize_app(cred)
-    db = firestore.client()
+    sa_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', 'NOT SET')
+    print(f"Service account path: {sa_path}")
+    if sa_path != 'NOT SET' and os.path.exists(sa_path):
+        print(f"Service account file exists, size: {os.path.getsize(sa_path)} bytes")
+    else:
+        print("WARNING: Service account file not found at path")
+
+    try:
+        if not firebase_admin._apps:
+            cred = credentials.ApplicationDefault()
+            firebase_admin.initialize_app(cred)
+        db = firestore.client()
+        print("Firebase initialized successfully")
+    except Exception as e:
+        print(f"FATAL: Firebase initialization failed: {e}")
+        return 1
 
     intersections = db.collection('intersections').stream()
     total_processed = 0

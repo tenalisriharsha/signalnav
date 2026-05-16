@@ -155,10 +155,23 @@ def process_deletion_requests(db):
 def main():
     print(f"[{datetime.now(timezone.utc).isoformat()}] Starting stale data cleanup...")
 
-    if not firebase_admin._apps:
-        cred = credentials.ApplicationDefault()
-        firebase_admin.initialize_app(cred)
-    db = firestore.client()
+    # Debug: show what auth method is available
+    sa_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', 'NOT SET')
+    print(f"Service account path: {sa_path}")
+    if sa_path != 'NOT SET' and os.path.exists(sa_path):
+        print(f"Service account file exists, size: {os.path.getsize(sa_path)} bytes")
+    else:
+        print("WARNING: Service account file not found at path")
+
+    try:
+        if not firebase_admin._apps:
+            cred = credentials.ApplicationDefault()
+            firebase_admin.initialize_app(cred)
+        db = firestore.client()
+        print("Firebase initialized successfully")
+    except Exception as e:
+        print(f"FATAL: Firebase initialization failed: {e}")
+        return 1
 
     deleted = delete_old_reports(db)
     archived = archive_very_old_reports(db)
