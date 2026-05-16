@@ -30,10 +30,16 @@ jobs:
           cd backend
           pip install -r requirements.txt
 
+      - name: Write service account key
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          python -c "import os; open('service-account.json','w').write(os.environ['FIREBASE_SERVICE_ACCOUNT'])"
+          python -c "import json; json.load(open('service-account.json')); print('Service account JSON valid')"
+
       - name: Run report aggregator
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
         run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > service-account.json
           cd backend
           python report_aggregator.py

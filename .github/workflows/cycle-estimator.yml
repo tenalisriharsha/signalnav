@@ -3,7 +3,7 @@ name: SignalNav - Cycle Estimator
 on:
   schedule:
     - cron: '*/15 * * * *'  # Every 15 minutes
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
 
 jobs:
   run-estimator:
@@ -30,10 +30,16 @@ jobs:
           cd backend
           pip install -r requirements.txt
 
+      - name: Write service account key
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          python -c "import os; open('service-account.json','w').write(os.environ['FIREBASE_SERVICE_ACCOUNT'])"
+          python -c "import json; json.load(open('service-account.json')); print('Service account JSON valid')"
+
       - name: Run cycle estimator
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/service-account.json
         run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > service-account.json
           cd backend
           python cycle_estimator.py
