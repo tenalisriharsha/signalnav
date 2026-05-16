@@ -1,0 +1,79 @@
+name: signalnav
+description: "SignalNav - Cross-platform crowdsourced traffic signal navigator. Hands-free, voice-first navigation for Springfield, IL."
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Maps
+  maplibre_gl: ^0.21.0
+
+  # Voice & Audio
+  flutter_tts: ^4.0.2
+  speech_to_text: ^6.6.0
+  vibration: ^1.9.0
+
+  # Location & Sensors
+  geolocator: ^11.0.0
+  sensors_plus: ^5.0.1
+
+  # Firebase
+  firebase_core: ^2.27.0
+  firebase_auth: ^4.17.8
+  cloud_firestore: ^4.15.8
+  cloud_functions: ^4.6.8
+
+  # Auth
+  google_sign_in: ^6.2.1
+
+  # Networking & Caching
+  http: ^1.2.0
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
+  connectivity_plus: ^5.0.2
+
+  # Screen & Power Management
+  wakelock_plus: ^1.1.6
+  screen_brightness: ^1.0.0
+
+  # Utilities
+  intl: ^0.19.0
+  crypto: ^3.0.3
+  uuid: ^4.3.3
+  flutter_dotenv: ^5.1.0
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+  collection: ^1.18.0
+
+  # UI
+  cupertino_icons: ^1.0.8
+  flutter_markdown: ^0.6.22
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.8
+  freezed: ^2.4.7
+  json_serializable: ^6.7.1
+  riverpod_generator: ^2.3.11
+  custom_lint: ^0.6.4
+  riverpod_lint: ^2.3.10
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/terms_of_service.md
+    - assets/privacy_policy.md
+    - assets/safety_notice.md

@@ -1,0 +1,22 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    avoid_print: true
+    prefer_const_constructors: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    unnecessary_this: true
+    always_specify_types: false
+    cancel_subscriptions: true
+    close_sinks: true
+    unnecessary_statements: true
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  errors:
+    invalid_assignment: warning
+    missing_return: error
+    dead_code: info

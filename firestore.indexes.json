@@ -1,0 +1,22 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "signal_reports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "intersection_id", "order": "ASCENDING" },
+        { "fieldPath": "phase", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "predictions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "intersection_id", "order": "ASCENDING" },
+        { "fieldPath": "updated_at", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

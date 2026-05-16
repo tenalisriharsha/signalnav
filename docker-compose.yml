@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  osrm-backend:
+    image: osrm/osrm-backend:latest
+    container_name: signalnav-osrm
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./osrm-data:/data
+    command: >
+      bash -c "
+        if [ ! -f /data/illinois.osrm ]; then
+          echo 'Downloading Illinois OSM extract...' &&
+          wget -O /data/illinois.osm.pbf https://download.geofabrik.de/north-america/us/illinois-latest.osm.pbf &&
+          echo 'Extracting OSRM data...' &&
+          osrm-extract -p /opt/car.lua /data/illinois.osm.pbf &&
+          osrm-partition /data/illinois.osrm &&
+          osrm-customize /data/illinois.osrm;
+        fi &&
+        echo 'Starting OSRM server...' &&
+        osrm-routed --algorithm mld /data/illinois.osrm
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/route/v1/driving/0,0;0,0"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
