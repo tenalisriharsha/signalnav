@@ -25,10 +25,11 @@ BATCH_SIZE = 500
 
 def delete_old_reports(db):
     cutoff = datetime.now(timezone.utc) - timedelta(hours=MAX_GPS_RETENTION_HOURS)
+    # Query by timestamp only to avoid composite index requirement.
+    # Skip archived docs in Python.
     old_reports = (
         db.collection('signal_reports')
         .where('timestamp', '<', cutoff)
-        .where('archived', '!=', True)
         .limit(BATCH_SIZE)
         .stream()
     )
@@ -36,6 +37,9 @@ def delete_old_reports(db):
     count = 0
     batch = db.batch()
     for doc in old_reports:
+        data = doc.to_dict()
+        if data.get('archived') is True:
+            continue
         batch.delete(doc.reference)
         count += 1
 
@@ -47,10 +51,11 @@ def delete_old_reports(db):
 
 def archive_very_old_reports(db):
     archive_cutoff = datetime.now(timezone.utc) - timedelta(days=STALE_DATA_ARCHIVE_DAYS)
+    # Query by timestamp only to avoid composite index requirement.
+    # Skip already-archived docs in Python.
     old_reports = (
         db.collection('signal_reports')
         .where('timestamp', '<', archive_cutoff)
-        .where('archived', '!=', True)
         .limit(BATCH_SIZE)
         .stream()
     )
@@ -58,6 +63,9 @@ def archive_very_old_reports(db):
     count = 0
     batch = db.batch()
     for doc in old_reports:
+        data = doc.to_dict()
+        if data.get('archived') is True:
+            continue
         batch.update(doc.reference, {
             'archived': True,
             'raw_gps_stripped': True,
