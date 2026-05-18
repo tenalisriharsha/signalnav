@@ -4,6 +4,7 @@
 /// and manual report buttons. This is the primary UI when NOT in driver mode
 /// or when passenger mode is enabled.
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -59,6 +60,101 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     locationService.setMonitoredIntersections(_intersections);
   }
 
+  Widget _buildMap() {
+    // MapLibre GL only supports iOS, Android, and Web
+    final isSupported = defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.android ||
+        kIsWeb;
+
+    if (!isSupported) {
+      return _buildDesktopFallback();
+    }
+
+    return MapLibreMap(
+      styleString: _mapStyleUrl,
+      onMapCreated: _onMapCreated,
+      initialCameraPosition: const CameraPosition(
+        target: LatLng(39.7817, -89.6501), // Springfield, IL
+        zoom: 13,
+      ),
+      trackCameraPosition: true,
+      myLocationEnabled: true,
+      myLocationTrackingMode: MyLocationTrackingMode.tracking,
+      onMapClick: (_, latLng) {
+        final nearest = _intersections.where((i) {
+          return i.isNear(latLng.latitude, latLng.longitude, 50);
+        }).toList();
+        if (nearest.isNotEmpty) {
+          _onSignalTap(nearest.first);
+        }
+      },
+    );
+  }
+
+  Widget _buildDesktopFallback() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          color: Colors.grey.shade900,
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline, color: Colors.orange),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Map view is not available on desktop. Use the list below to view and report signals.',
+                  style: TextStyle(color: Colors.orange.shade200),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _intersections.length,
+            itemBuilder: (context, index) {
+              final intersection = _intersections[index];
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: _colorForConfidence(intersection.confidenceStatus),
+                  child: Text(
+                    intersection.speedLimitMph.toString(),
+                    style: const TextStyle(fontSize: 12, color: Colors.white),
+                  ),
+                ),
+                title: Text(
+                  intersection.displayName,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  '${intersection.signalType.name} • ${intersection.speedLimitMph} mph',
+                  style: const TextStyle(color: Colors.white54),
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.report, color: Colors.orange),
+                  onPressed: () => _showColorPicker(intersection),
+                ),
+                onTap: () => _onSignalTap(intersection),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _colorForConfidence(ConfidenceStatus status) {
+    switch (status) {
+      case ConfidenceStatus.high:
+        return Colors.green;
+      case ConfidenceStatus.medium:
+        return Colors.orange;
+      case ConfidenceStatus.low:
+        return Colors.red;
+    }
+  }
+
   void _onMapCreated(MapLibreMapController controller) {
     _mapController = controller;
     _addSignalMarkers();
@@ -73,7 +169,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         CircleOptions(
           geometry: LatLng(intersection.lat, intersection.lng),
           circleRadius: 8,
-          circleColor: _colorForConfidence(intersection.confidenceStatus),
+          circleColor: _hexColorForConfidence(intersection.confidenceStatus),
           circleStrokeWidth: 2,
           circleStrokeColor: '#FFFFFF',
         ),
@@ -81,7 +177,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     }
   }
 
-  String _colorForConfidence(ConfidenceStatus status) {
+  String _hexColorForConfidence(ConfidenceStatus status) {
     switch (status) {
       case ConfidenceStatus.high:
         return '#4CAF50'; // Green
@@ -138,26 +234,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ),
       body: Stack(
         children: [
-          MapLibreMap(
-            styleString: _mapStyleUrl,
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(39.7817, -89.6501), // Springfield, IL
-              zoom: 13,
-            ),
-            trackCameraPosition: true,
-            myLocationEnabled: true,
-            myLocationTrackingMode: MyLocationTrackingMode.tracking,
-            onMapClick: (_, latLng) {
-              // Find nearest intersection
-              final nearest = _intersections.where((i) {
-                return i.isNear(latLng.latitude, latLng.longitude, 50);
-              }).toList();
-              if (nearest.isNotEmpty) {
-                _onSignalTap(nearest.first);
-              }
-            },
-          ),
+          _buildMap(),
           if (_isLoading)
             const Center(
               child: CircularProgressIndicator(color: Colors.white),
