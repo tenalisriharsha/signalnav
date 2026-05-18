@@ -24,7 +24,7 @@ class MapScreen extends ConsumerStatefulWidget {
 }
 
 class _MapScreenState extends ConsumerState<MapScreen> {
-  MaplibreMapController? _mapController;
+  MapLibreMapController? _mapController;
   List<Intersection> _intersections = [];
   bool _isLoading = true;
 
@@ -59,7 +59,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     locationService.setMonitoredIntersections(_intersections);
   }
 
-  void _onMapCreated(MaplibreMapController controller) {
+  void _onMapCreated(MapLibreMapController controller) {
     _mapController = controller;
     _addSignalMarkers();
   }
@@ -138,7 +138,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       ),
       body: Stack(
         children: [
-          MaplibreMap(
+          MapLibreMap(
             styleString: _mapStyleUrl,
             onMapCreated: _onMapCreated,
             initialCameraPosition: const CameraPosition(
